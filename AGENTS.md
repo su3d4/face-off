@@ -1,18 +1,26 @@
 # Agent Development Guidelines
-This document provides guidelines for agents working in the eastlake-science-fair repository.
+This document provides essential guidelines for agents working in the eastlake-science-fair repository.
 
 ## Environment Setup
 
 ### Development Environment
-This project uses Nix for environment management. The environment includes:
 - Python 3.14 with numpy and ollama packages
 - Code quality tools: black (formatter), mypy (type checker)
+- Nix for environment management
 - Required system libraries: libffi, openssl
 
-### Run tests
-To run all tests or specific tests, use the following commands:
+### Supported Ollama Vision Models
+- `llama4:scout`: Multi-modal model for image analysis and facial expression recognition
+- `qwen-vl:8b`: Vision-language model for comprehensive image understanding
+- `qwen3-vl-8b-MAX:latest`: Enhanced vision-language model with advanced processing
 
+## Code Style Guidelines
+
+### Build/Lint/Test Commands
 ```bash
+# Activate Nix environment
+nix-shell
+
 # Run all tests
 pytest
 
@@ -24,243 +32,171 @@ pytest -v
 
 # Run with coverage
 pytest --cov=.
-```
 
-## Code Style Guidelines
+# Format code
+black .
+
+# Type check
+mypy .
+```
 
 ### Import Organization
-1. **Standard library imports first** - Organize imports alphabetically
-2. **Third-party imports second** - Group by package
-3. **Local imports last** - Place at the end of the file
-4. **Separate import groups** with blank lines
-5. **Use relative imports** for local module imports when appropriate
+1. Standard library imports first (alphabetically)
+2. Third-party imports second (grouped by package)
+3. Local imports last
+4. Separate groups with blank lines
+5. Use `from config import ImageConfig`, `from utils import`, etc.
 
-Example:
-```python
-import os
-from pathlib import Path
+### Formatting and Types
+- Use 4 spaces for indentation (no tabs)
+- Follow PEP 8 standard
+- Use black for automatic formatting (max 88 characters line length)
+- Always use type hints for function signatures
+- Use snake_case for functions/variables, CamelCase for classes
+- Use `Optional[Type]` or `Type | None` for optional parameters
+- Use `Union[TypeA, TypeB]` for union types
 
-import ollama
-from some_library import SomeClass
-```
-
-### Indentation and Formatting
-1. **Use 4 spaces for indentation** (no tabs)
-2. **Follow PEP 8 standard** for Python code
-3. **Use black** for automatic formatting:
-   ```bash
-   black .
-   ```
-4. **Line length**: Maximum 88 characters
-
-### Variable and Function Naming
-1. **CamelCase for classes**: `class ClassName:`
-2. **snake_case for functions and variables**: `def my_function():`
-3. **snake_case for constants**: `CONSTANT_NAME = 42`
-4. **Descriptive names**: Avoid single-letter variables unless in loops
-5. **Type annotations** for function parameters and return values
-
-### Type Hints
-1. **Always use type hints** for all function signatures
-2. **Optional types**: Use `Optional[Type]` for optional parameters
-3. **Union types**: Use `Union[TypeA, TypeB]` or `TypeA | TypeB`
-4. **Complex types**: Use `TypedDict` for dictionary types
+### Naming Conventions
+- `snake_case` for functions, variables, constants: `my_function()`, `CONSTANT_NAME`
+- `CamelCase` for classes: `class ClassName:`
+- `lowercase_with_underscores` for module names
+- `lowercase_with_underscores` for file names (e.g., `utils.py`, `main.py`)
+- Use descriptive names, avoid single-letter variables unless in loops
 
 ### Error Handling
-1. **Use context managers** with `with` statements for file operations
-2. **Handle Exceptions specifically**: Catch specific exceptions, not bare except
-3. **Use meaningful error messages**: Provide context in error prints
-4. **Log errors appropriately**: Use logging instead of print for errors
-5. **Validate inputs**: Check file existence, type conversion, etc.
-
-### Comments
-1. **Document complex logic**: Explain non-obvious code sections
-2. **Comment temporary fixes**: Mark TODO, FIXME, HACK with descriptions
-3. **Avoid comments for code**: Use meaningful names instead
-4. **Follow existing style**: Match comment style with the codebase
+- Use context managers with `with` statements for file operations
+- Catch specific exceptions, not bare `except`
+- Use logging instead of print for errors
+- Validate file existence and types before operations
+- Handle Ollama API connection errors gracefully
+- Check `stream.response` attribute for text output
 
 ### Code Organization
-1. **Separate concerns**: Group related functions together
-2. **Limit function length**: Keep functions focused and concise
-3. **Use classes for state**: When state is needed
-4. **Avoid global variables**: Minimize global state, prefer local variables
-5. **Separate configuration**: Define constants and settings separately
-
-### Python Conventions
-1. **Use f-strings** for string formatting: `f"Value: {var}"`
-2. **Use list comprehensions** for simple transformations
-3. **Use ** operator for exponentiation: `x ** 2`
-4. **Use meaningful docstrings**: Describe function purpose and parameters
-5. **Follow PEP 484** for type hinting
+- Separate concerns: group related functions together
+- Limit function length to 50 lines or less
+- Use classes for state when needed
+- Minimize global variables, prefer local variables
+- Write tests first for new features
 
 ### Testing Guidelines
-1. **Write tests for new features**
-2. **Test edge cases**: Empty input, invalid types, boundary conditions
-3. **Mock external dependencies**: Use mocks for API calls, file operations
-4. **Test error paths**: Verify exception handling
-5. **Maintain test coverage**: Aim for 80%+ coverage
-
-### Documentation Requirements
-1. **Document public API**: Functions, classes, and key modules
-2. **Use docstrings** in Google, NumPy, or reStructuredText format
-3. **Include examples** for complex functions
-4. **Document parameters** with types and descriptions
-5. **Document return values** including types
-6. **Document side effects** where applicable
+- Write tests for all new features
+- Test edge cases: empty input, invalid types, boundary conditions
+- Mock external dependencies (Ollama API, file operations)
+- Test error paths and exception handling
+- Aim for 80%+ test coverage
 
 ## Development Workflow
 
 ### Before Making Changes
-1. **Review existing code**: Understand patterns and conventions
-2. **Check related tests**: Ensure tests cover related functionality
-3. **Update documentation**: Update AGENTS.md if adding new conventions
+1. Review existing code patterns and conventions
+2. Check if related tests exist
+3. Understand Ollama API interactions and error handling
 
 ### When Making Changes
-1. **Follow existing style**: Match the codebase's conventions
-2. **Write tests first**: Write tests for new features
-3. **Run linters**: Pass code quality checks before committing
-4. **Run tests**: Ensure all tests pass locally
-5. **Commit messages**: Use clear, descriptive commit messages
+1. Follow existing code style and patterns
+2. Run `black .` to ensure proper formatting
+3. Run `pytest` or `pytest -k test_name` to verify changes
+4. Run `mypy .` to ensure type correctness
+5. Commit clear, descriptive messages
 
 ### After Making Changes
-1. **Update AGENTS.md**: Add or update guidelines if needed
-2. **Review test coverage**: Ensure new code is tested
-3. **Update documentation**: Document new features or changes
+1. Verify tests still pass
+2. Check code quality tools results
+3. Update documentation if new features are added
+
+## Project Architecture
+
+### Core Modules
+- **config.py**: Global configuration with Ollama settings and image paths
+- **utils.py**: Utility functions (file operations, directory traversal, logging)
+- **main.py**: Basic image processing with qwen3 model (free response)
+- **main2.py**: Image processing with llama4 model (free response)
+- **multipleChoice.py**: Multiple choice queries with qwen3 model (choice response)
+- **multipleChoice2.py**: Multiple choice queries with llama4 model (choice response)
+- **create_analysis_table.py**: Generate analysis tables from results
+
+### Directory Structure
+- **log/**: Execution logs with timestamp identification
+- **results/**: Individual result files with model_name/timestamp-q*.txt format
+- **../Q2**: Main image directory (.jpg files)
+- **../Q2/MC**: Prompt directory (.txt files)
+
+### File Naming Convention
+- Result files: `{question_num}_{model}_{timestamp}_{type}.txt`
+  - Type: "free" for main.py/main2.py, "choice" for multipleChoice files
+  - Example: `q01_llama4:scout_20260221_123456_free.txt`
 
 ## Common Code Patterns
 
 ### File Operations
 ```python
+from pathlib import Path
+
 # Use context managers for file operations
 with open('file.txt', 'r') as f:
     content = f.read()
+
+# Validate file existence
+if os.path.isfile(path) and path.suffix in ('.jpg', '.txt'):
+    process_file(path)
 ```
 
-### API Calls
+### Ollama API Interactions
 ```python
-# Always handle responses and errors
-try:
-    response = client.call_api(params)
-    if response.success:
-        return response.data
-except Exception as e:
-    logger.error(f"API call failed: {e}")
-    raise
-```
+from ollama import Client
 
-### Configuration Loading
-```python
-# Load from environment or config file
-config = load_config()
-# Use typed configuration object
-```
-
-### Directory Traversal and File Handling
-```python
-# Read files from directory with filtering
-directory = '../Q2'  # image directory
-for filename in os.listdir(directory):
-    path = os.path.join(directory, filename)
-    if os.path.isfile(path) and filename.endswith('.jpg'):
-        process_file(path)
-
-# Sort file lists for consistent processing
-file_list.sort()
-
-# Read all files and batch process
-file_list = []
-for filename in os.listdir(directory):
-    if filename.endswith('.txt'):
-        file_list.append(os.path.join(directory, filename))
-```
-
-### API Client Usage
-```python
-# Create client instance once and reuse
+# Create client instance
 client = Client(host='http://10.0.26.32:11434')
 
-# Prepare image and prompt arrays
-images = []
-prompts = []
+# Handle API responses with error checking
+try:
+    stream = client.generate(model='llama4:scout', prompt=text, images=[image_path])
+    response_content = str(stream.response)
 
-# Make batch API calls
-for image_path, prompt_text in zip(image_paths, prompts):
-    response = client.generate(
-        model='model-name',
-        prompt=prompt_text,
-        images=[image_path]
-    )
-    process_response(response.response)
+    # Process response and write to results
+    write_result_file(image_path, response_content, 'llama4:scout', prompt)
+except Exception as e:
+    logging.error(f"API call failed: {e}")
+```
+
+### Logging Pattern
+```python
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Create log directory and write execution log
+log_messages = ["Starting task...", "Processing images..."]
+write_log_file(config, log_messages)
+```
+
+### Directory Setup
+```python
+# Create log and results directories
+Path(config.directories.log_directory).mkdir(parents=True, exist_ok=True)
+Path(config.directories.results_directory).mkdir(parents=True, exist_ok=True)
+
+# Get unique result filename
+result_file = get_unique_filename(image_path, 'llama4:scout', 'free')
+# Creates: {question_num}_{model}_{timestamp}_{type}.txt
 ```
 
 ## Project-Specific Notes
 
-### Environment-Sensitive Code
-- This project interacts with Ollama API (http://10.0.26.32:11434)
-- Ensure Ollama service is running before executing scripts
-- Handle connection errors gracefully
+### Running Experiments
+- Ensure Ollama service is running at http://10.0.26.32:11434
+- Use `main.py` for qwen3-vl-8b-MAX:latest with free responses
+- Use `main2.py` for llama4:scout with free responses
+- Use `multipleChoice.py` for qwen3-vl-8b-MAX:latest with choice responses
+- Use `multipleChoice2.py` for llama4:scout with choice responses
 
-### File Structure
-- **main.py**: Basic image processing with Ollama
-- **main2.py**: Alternative model testing
-- **multipleChoice.py**: Multiple choice prompt and image queries
-- **shell.nix**: Nix environment configuration
-- Test files should follow naming convention: `test_*.py`
+### Analysis
+- Run `python3 create_analysis_table.py` to generate comparison tables
+- Results stored in `results/` with unique timestamp identification
+- Log files stored in `log/` with execution timestamps
 
-## Continuous Integration
-
-If CI/CD is configured, ensure:
-1. All tests pass
-2. Code passes black formatting
-3. Code passes mypy type checking
-4. Test coverage meets requirements
-
-## Codebase Specific Patterns
-
-### Batch Processing with Ollama API
-- **Multi-model testing**: Scripts like main.py and main2.py demonstrate pattern of iterating through images and sending each to different models (qwen3-vl-8b-MAX:latest vs llama4:scout)
-- **Batch file operations**: Use list comprehensions to collect file paths, then sort for deterministic ordering
-- **Client isolation**: Create client instance at module level for reuse across multiple API calls
-
-### Image and Prompt Directory Structure
-- Main image directory: `../Q2` (contains .jpg files)
-- Prompt directory: `../Q2/MC` (contains .txt files with prompts)
-- Scripts should locate and process these standard directory paths for consistency
-
-### Response Handling
-- Check `stream.response` attribute for text output from Ollama API
-- Print both full stream and response for debugging and documentation
-- Handle model variations - use appropriate model names for different task requirements
-
-### Error Handling Patterns
-- Validate file existence before reading: `if os.path.isfile(path)`
-- Check file extensions with `filename.endswith('.jpg')` or `['.jpg', '.txt']`
-- Handle potential connection errors when Ollama service is unavailable
-
-## Project Architecture
-
-### Science Fair Project Context
-This is an AI-assisted science fair project focusing on facial expression recognition. The project includes:
-- **Experimental trials**: F1, F2, MC (multiple choice) - face analysis sessions
-- **Novel data sets**: Separate evaluation trials with new questions/exercises
-- **Multi-session organization**: Each session generates JSON logs (F1-chat.json, MC1-chat.json, etc.)
-- **Documented trials**: PDF reports for F1, F2, MC, MC2 sessions and novel data
-
-### Chat Session Workflow
-The project uses Ollama chat sessions to:
-1. Process multiple-choice questions with image inputs (F1, F2, MC series)
-2. Generate JSON responses with detailed analysis and emotion detection
-3. Track responses through chat.json files in the project root
-4. Produce summary reports (Score Summary.pdf, Tests Summary.pdf, etc.)
-
-### Ollama Model Configuration
-- Project uses `opencode.json` configuration at repository root for model definitions
-- Multiple model providers configured: local Ollama and Ollama (taiko) with different API endpoints
-- Models available: gpt-oss, qwen3-coder, glm-4.7-flash variants, requiring proper model selection
-- Modelfile examples exist in `../modelfiles/` directory showing context parameter settings
-
-### Data Organization Patterns
-- **Session data**: chat.json files store full chat history and API responses
-- **PDF documentation**: Trial results and analysis documents (all in main project root, not src/)
-- **Excel/ODS datasets**: Test data in TestData.xlsx and TestDataMC.ods formats
-- **Nested structure**: src/ directory for Python scripts, main directory for experimental data
+### Configuration
+- Main image directory: `../Q2`
+- Prompt directory: `../Q2/MC`
+- Default model for main scripts: `qwen3-vl-8b-MAX:latest`
+- Alternative model for comparison: `llama4:scout`
